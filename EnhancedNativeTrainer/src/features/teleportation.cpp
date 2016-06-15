@@ -374,7 +374,7 @@ void teleport_to_marker()
 	{
 		ENTITY::SET_ENTITY_COORDS_NO_OFFSET(e, coords.x, coords.y, groundCheckHeight[i], 0, 0, 1);
 		WAIT(100);
-		if (GAMEPLAY::GET_GROUND_Z_FOR_3D_COORD(coords.x, coords.y, groundCheckHeight[i], &coords.z))
+		if (GAMEPLAY::GET_GROUND_Z_FOR_3D_COORD(coords.x, coords.y, groundCheckHeight[i], &coords.z, 0)) //last 0 unknown
 		{
 			groundFound = true;
 			coords.z += 3.0;
@@ -456,7 +456,7 @@ void get_chauffeur_to_marker()
 		AI::CLEAR_PED_TASKS_IMMEDIATELY(PLAYER::PLAYER_PED_ID());
 	}
 
-	GAMEPLAY::GET_GROUND_Z_FOR_3D_COORD(blipCoords.x, blipCoords.y, blipCoords.z, &blipCoords.z);
+	GAMEPLAY::GET_GROUND_Z_FOR_3D_COORD(blipCoords.x, blipCoords.y, blipCoords.z, &blipCoords.z, 0); //last 0 unknown
 	blipCoords.z += 3.0;
 
 	Hash V_hash = GAMEPLAY::GET_HASH_KEY("KURUMA2"); // armored kuruma, for all your drive-by needs
@@ -526,7 +526,7 @@ void cancel_chauffeur(std::string message)
 		Ped driver = VEHICLE::GET_PED_IN_VEHICLE_SEAT(veh, -1);
 
 		VEHICLE::SET_VEHICLE_FORWARD_SPEED(veh, 0.0);
-		VEHICLE::SET_VEHICLE_ENGINE_ON(veh, FALSE, true);
+		VEHICLE::SET_VEHICLE_ENGINE_ON(veh, FALSE, true, true); //last true unknown
 		if (ENTITY::DOES_ENTITY_EXIST(driver))
 		{
 			if (driver != PLAYER::PLAYER_PED_ID())
@@ -612,17 +612,21 @@ bool onconfirm_teleport_location(MenuItem<int> choice)
 		{
 			for each (const char* scenery in value->scenery_toremove)
 			{
-				if (STREAMING::IS_IPL_ACTIVE(scenery))
+				char * cScenery = strdup(scenery);
+				if (STREAMING::IS_IPL_ACTIVE(cScenery))
 				{
-					STREAMING::REMOVE_IPL(scenery);
+					STREAMING::REMOVE_IPL(cScenery);
 				}
+				delete[] cScenery;
 			}
 			for each ( const char* scenery in value->scenery_required )
 			{
-				if (!STREAMING::IS_IPL_ACTIVE(scenery))
+				char * cScenery = strdup(scenery);
+				if (!STREAMING::IS_IPL_ACTIVE(cScenery))
 				{
-					STREAMING::REQUEST_IPL(scenery);
+					STREAMING::REQUEST_IPL(cScenery);
 				}
+				delete[] cScenery;
 			}
 		}
 
@@ -696,17 +700,21 @@ bool onconfirm_teleport_location(MenuItem<int> choice)
 				{
 					for each ( const char* scenery in loc->scenery_required )
 					{
-						if (STREAMING::IS_IPL_ACTIVE(scenery))
+						char * cScenery = strdup(scenery);
+						if (STREAMING::IS_IPL_ACTIVE(cScenery))
 						{
-							STREAMING::REMOVE_IPL(scenery);
+							STREAMING::REMOVE_IPL(cScenery);
 						}
+						delete[] cScenery;
 					}
 					for each (const char* scenery in loc->scenery_toremove)
 					{
-						if (!STREAMING::IS_IPL_ACTIVE(scenery))
+						char * cScenery = strdup(scenery);
+						if (!STREAMING::IS_IPL_ACTIVE(cScenery))
 						{
-							STREAMING::REQUEST_IPL(scenery);
+							STREAMING::REQUEST_IPL(cScenery);
 						}
+						delete[] cScenery;
 					}
 				}
 
@@ -859,7 +867,12 @@ const std::vector<std::string> TOGGLE_IPLS
 
 bool is_ipl_active(std::vector<std::string> extras)
 {
-	return STREAMING::IS_IPL_ACTIVE(extras.at(0).c_str());
+	char * writable = new char[extras.at(0).size() + 1];
+	std::copy(extras.at(0).begin(), extras.at(0).end(), writable);
+	writable[extras.at(0).size()] = '\0';
+	bool result = STREAMING::IS_IPL_ACTIVE(writable);
+	delete[] writable;
+	return result;
 }
 
 void set_ipl_active(bool applied, std::vector<std::string> extras)

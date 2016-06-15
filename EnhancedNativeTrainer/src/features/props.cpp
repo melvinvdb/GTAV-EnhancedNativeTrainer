@@ -96,7 +96,7 @@ bool get_ground_height_at_position(Vector3 coords, float* result)
 	GAMEPLAY::GET_MODEL_DIMENSIONS(propHash, &minDimens, &maxDimens);
 
 	Object obj = OBJECT::CREATE_OBJECT_NO_OFFSET(propHash, coords.x, coords.y, coords.z, creationParam1, creationParam2, creationParam3);
-	ENTITY::SET_ENTITY_VISIBLE(obj, false);
+	ENTITY::SET_ENTITY_VISIBLE(obj, false, false); //last unknown
 	OBJECT::PLACE_OBJECT_ON_GROUND_PROPERLY(obj);
 	Vector3 objLocation = ENTITY::GET_ENTITY_COORDS(obj, 0);
 	float objHeight = ENTITY::GET_ENTITY_HEIGHT(obj, objLocation.x, objLocation.y, objLocation.z, 1, 0);

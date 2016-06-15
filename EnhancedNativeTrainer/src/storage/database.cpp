@@ -857,7 +857,7 @@ bool ENTDatabase::save_skin(Ped ped, std::string saveName, sqlite3_int64 slot)
 
 	if (rc != SQLITE_OK)
 	{
-		write_text_to_log_file("Vehicle save failed");
+		write_text_to_log_file("Skin save failed");
 		write_text_to_log_file(sqlite3_errmsg(db));
 		result = false;
 	}
@@ -929,7 +929,27 @@ bool ENTDatabase::save_vehicle(Vehicle veh, std::string saveName, sqlite3_int64 
 			colourCustom2R INTEGER, \ 16
 			colourCustom2G INTEGER, \ 17
 			colourCustom2B INTEGER, \ 18
-	*/
+			livery INTEGER, \ 19
+			plateText TEXT, \ 20
+			plateType INTEGER, \ 21
+			wheelType INTEGER, \ 22
+			windowTint INTEGER, \ 23
+			burstableTyres INTEGER, \ 24
+			customTyres INTEGER, \ 25
+			dirtLevel REAL DEFAULT 0, \ 26
+			fadeLevel REAL DEFAULT 0, \ 27
+			neonR INTEGER DEFAULT - 1, \ 28
+			neonG INTEGER DEFAULT - 1, \ 29
+			neonB INTEGER DEFAULT - 1, \ 30
+			neon0Enabled INTEGER DEFAULT 0, \ 31
+			neon1Enabled INTEGER DEFAULT 0, \ 32
+			neon2Enabled INTEGER DEFAULT 0, \ 33
+			neon3Enabled INTEGER DEFAULT 0, \ 34
+			tyreSmokeR INTEGER DEFAULT - 1, \ 35
+			tyreSmokeG INTEGER DEFAULT - 1, \ 36
+			tyreSmokeB INTEGER DEFAULT - 1, \ 37
+			convertibleRoofUp INTEGER DEFAULT 0 \ 38
+		)*/
 
 	sqlite3_stmt *stmt;
 	const char *pzTest;

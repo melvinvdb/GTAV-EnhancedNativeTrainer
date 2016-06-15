@@ -22393,7 +22393,7 @@ void do_play_anim(Ped playerPed, char* dict, char* anim, int mode)
 		PED::PLAY_FACIAL_ANIM(playerPed, anim, dict);
 		break;
 	case CATEGORY_FACIAL_IDLE:
-		PED::SET_FACIAL_IDLE_ANIM_OVERRIDE(playerPed, anim, dict);
+		PED::SET_FACIAL_IDLE_ANIM_OVERRIDE(playerPed, anim, (Any*)dict);
 		break;
 	case CATEGORY_GENERAL_NOW:
 		AI::TASK_PLAY_ANIM(playerPed, dict, anim, 8, -8, -1, 0, 0, false, 0, true);

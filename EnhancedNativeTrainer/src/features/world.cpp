@@ -386,7 +386,7 @@ void update_world_features()
 
 	if (featureWorldNoTrafficUpdated)
 	{
-		VEHICLE::_0xF796359A959DF65D(!featureWorldNoTraffic);
+		VEHICLE::_0xF796359A959DF65D(!featureWorldNoTraffic); //0xF796359A959DF65D == _DISPLAY_DISTANT_VEHICLES
 		GRAPHICS::DISABLE_VEHICLE_DISTANTLIGHTS(featureWorldNoTraffic);
 
 		if (featureWorldNoTraffic)
@@ -396,13 +396,13 @@ void update_world_features()
 
 			STREAMING::SET_VEHICLE_POPULATION_BUDGET(0);
 			VEHICLE::SET_ALL_VEHICLE_GENERATORS_ACTIVE_IN_AREA(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0, 0, 1);
-			PATHFIND::SET_ROADS_IN_AREA(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0, 0, 1);
+			//PATHFIND::SET_ROADS_IN_AREA(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0, 0, 1); //Disabled: traffic won't appear anymore after reenabling
 		}
 		else
 		{
 			STREAMING::SET_VEHICLE_POPULATION_BUDGET(3);
 			VEHICLE::SET_ALL_VEHICLE_GENERATORS_ACTIVE();
-			PATHFIND::SET_ROADS_BACK_TO_ORIGINAL(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0);
+			//PATHFIND::SET_ROADS_BACK_TO_ORIGINAL(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0); //Disabled: traffic won't appear anymore after reenabling
 		}
 
 		featureWorldNoTrafficUpdated = false;
@@ -416,7 +416,7 @@ void update_world_features()
 		}
 		STREAMING::SET_VEHICLE_POPULATION_BUDGET(0);
 		VEHICLE::SET_ALL_VEHICLE_GENERATORS_ACTIVE_IN_AREA(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0, 0, 1);
-		PATHFIND::SET_ROADS_IN_AREA(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0, 0, 1);
+		//PATHFIND::SET_ROADS_IN_AREA(-10000.0, -10000.0, -200.0, 10000.0, 10000.0, 1000.0, 0, 1); //Disabled: traffic won't appear anymore after reenabling
 	}
 
 	if (!featureWorldRandomTrains)

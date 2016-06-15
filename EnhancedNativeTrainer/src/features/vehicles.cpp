@@ -1937,7 +1937,7 @@ void fix_vehicle()
 			VEHICLE::SET_VEHICLE_UNDRIVEABLE(veh, false);
 			VEHICLE::SET_VEHICLE_ENGINE_CAN_DEGRADE(veh, false);
 
-			VEHICLE::SET_VEHICLE_ENGINE_ON(veh, true, true);
+			VEHICLE::SET_VEHICLE_ENGINE_ON(veh, true, true, true); //last bool unknown
 
 			set_status_text("Vehicle Repaired");
 		}
