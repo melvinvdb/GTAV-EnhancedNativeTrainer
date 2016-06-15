@@ -43,6 +43,10 @@ bool process_carspawn_menu();
 
 void update_vehicle_features(BOOL playerExists, Ped playerPed);
 
+void update_vehicle_management_features(BOOL bPlayerExists, Ped playerPed);
+
+void add_owned_vehicle(Vehicle veh);
+
 void reset_vehicle_globals();
 
 bool process_spawn_menu_cars();
@@ -128,6 +132,16 @@ int get_current_veh_invincibility_mode();
 void onchange_veh_invincibility_mode(int value, SelectFromListMenuItem* source);
 
 int get_current_veh_eng_pow_index();
+
+void onconfirmed_veh_lock_index(int value, SelectFromListMenuItem* source);
+
+void onconfirmed_veh_unlock_index(int value, SelectFromListMenuItem* source);
+
+void onconfirmed_veh_kick_index(int value, SelectFromListMenuItem* source);
+
+void onconfirmed_veh_retrieve_index(int value, SelectFromListMenuItem* source);
+
+void onconfirmed_veh_explode_index(int value, SelectFromListMenuItem* source);
 
 void onchange_veh_eng_pow_index(int value, SelectFromListMenuItem* source);
 

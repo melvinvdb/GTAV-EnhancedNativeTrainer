@@ -137,10 +137,10 @@ class SelectFromListMenuItem : public MenuItem <int>
 {
 public:
 
-	inline SelectFromListMenuItem(std::vector<std::string> captions, void(*onValueChangeCallback)(int, SelectFromListMenuItem*))
+	inline SelectFromListMenuItem(const std::vector<std::string>& captions, void(*onValueChangeCallback)(int, SelectFromListMenuItem*), void(*onValueConfirmedCallback)(int, SelectFromListMenuItem*) = NULL) : itemCaptions(captions)
 	{
-		this->itemCaptions = captions;
 		this->onValueChangeCallback = onValueChangeCallback;
+		this->onValueConfirmedCallback = onValueConfirmedCallback;
 	}
 
 	virtual ~SelectFromListMenuItem() {}
@@ -155,9 +155,11 @@ public:
 
 	virtual std::string getCurrentCaption();
 
-	std::vector<std::string> itemCaptions;
+	const std::vector<std::string>& itemCaptions;
 
 	void(*onValueChangeCallback)(int index, SelectFromListMenuItem* source);
+
+	void(*onValueConfirmedCallback)(int index, SelectFromListMenuItem* source);
 
 	bool wrap = true;
 

@@ -417,6 +417,13 @@ void WantedSymbolItem::handleRightPress()
 bool SelectFromListMenuItem::onConfirm() {
 	locked = !locked; // toggle whether we're "locked in" to the setting
 	// change menu item color to signify it's locked in
+	if (!locked)
+	{
+		if (onValueConfirmedCallback != NULL)
+		{
+			this->onValueConfirmedCallback(value, this);
+		}
+	}
 	return locked;
 }
 
@@ -462,7 +469,10 @@ void SelectFromListMenuItem::handleRightPress()
 
 std::string SelectFromListMenuItem::getCurrentCaption()
 {
-	return this->itemCaptions.at(this->value);
+	if (this->value < itemCaptions.size())
+		return this->itemCaptions.at(this->value);
+	else
+		return "";
 }
 
 void draw_ingame_sprite(MenuItemImage *image, float x, float y, int w, int h)
