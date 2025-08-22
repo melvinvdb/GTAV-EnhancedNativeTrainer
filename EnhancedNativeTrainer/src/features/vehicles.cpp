@@ -596,6 +596,9 @@ void PopulateVehicleModelsArray()
 char* GetVehicleModelName(int modelHash)
 {
 	int index = 0xFFFF;
+	if (!GetModelInfo) {
+		return nullptr;
+	}
 	uint64_t modelInfo = GetModelInfo(modelHash, &index);
 	return (char*)(modelInfo + 0x298);
 }
@@ -603,6 +606,9 @@ char* GetVehicleModelName(int modelHash)
 char* GetVehicleMakeName(int modelHash)
 {
 	int index = 0xFFFF;
+	if (!GetModelInfo) {
+		return nullptr;
+	}
 	uint64_t modelInfo = GetModelInfo(modelHash, &index);
 	return (char*)(modelInfo + 0x2A4);
 }
@@ -671,8 +677,25 @@ std::vector<Hash> get_vehicles_from_category(int category)
 std::string get_vehicle_make_and_model(int modelHash)
 {
 	std::stringstream ss;
-	std::string make = std::string(UI::_GET_LABEL_TEXT(GetVehicleMakeName(modelHash)));
-	std::string model = std::string(UI::_GET_LABEL_TEXT(GetVehicleModelName(modelHash)));
+
+	std::string model;
+	char* vehicle_model_name = GetVehicleModelName(modelHash);
+	if (vehicle_model_name) {
+		model = std::string(UI::_GET_LABEL_TEXT(vehicle_model_name));
+	}
+	else {
+		model = std::string("Unknown");
+	}
+
+	std::string make;
+	char* vehicle_make_name = GetVehicleMakeName(modelHash);
+	if (vehicle_make_name) {
+		make = std::string(UI::_GET_LABEL_TEXT(vehicle_make_name));
+	}
+	else {
+		make = std::string("Unknown");
+	}
+	
 	//write_text_to_log_file("[DEBUG] Combined name: " + make + " " + model);
 
 	if (make == "NULL")
@@ -4982,10 +5005,16 @@ bool onconfirm_spawn_menu_cars(MenuItem<int> choice){
 		itemIndex++;
 		MenuItem<int>* item = new MenuItem<int>();
 		
-		if (get_vehicle_make_and_model(hash).compare("NULL") == 0 || get_vehicle_make_and_model(hash).compare("") == 0)
+		if (get_vehicle_make_and_model(hash).compare("NULL") == 0 || get_vehicle_make_and_model(hash).compare("") == 0) {
 			//item->caption = "Item " + std::to_string(itemIndex);
-			item->caption = GetVehicleModelName(hash);
-		else
+			char *model = GetVehicleModelName(hash);
+			if (model) {
+				item->caption = model;
+			}
+			else {
+				item->caption = "Unknown";
+			}
+		} else
 			item->caption = get_vehicle_make_and_model(hash);
 		item->value = hash;
 		menuItems.push_back(item);

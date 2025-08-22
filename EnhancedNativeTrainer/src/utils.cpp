@@ -147,6 +147,11 @@ int RegisterFile(const std::string& fullPath, const std::string& fileName)
 	std::string path = fullPath.c_str();
 	static uint32_t* (*pRegisterFile)(int*, const char*, bool, const char*, bool) = reinterpret_cast<decltype(pRegisterFile)>(FindPatternJACCO("\x48\x89\x5C\x24\x00\x48\x89\x6C\x24\x00\x48\x89\x7C\x24\x00\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x50\x48\x8B\xEA\x4C\x8B\xFA\x48\x8B\xD9\x4D\x85\xC9", "xxxx?xxxx?xxxx?xxxxxxxxxxxxxxxxxxxxxx"));
 
+	if (!pRegisterFile) {
+		write_text_to_log_file("[ERROR] RegisterFile handle not found!");
+		return -1;
+	}
+
 	if (pRegisterFile(&textureID, fullPath.c_str(), true, fileName.c_str(), false))
 	{
 		return textureID;
