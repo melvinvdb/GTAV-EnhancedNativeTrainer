@@ -458,17 +458,20 @@ Vector3 RotationToDirection2(Vector3* rot)
 	return dir;
 }
 
-void GenerateVehicleModelList()
+void GenerateVehicleModelListLegacy()
 {
 	unsigned short modelHashEntries;
 	int modelNum1;
 	UINT64 modelHashTable, modelNum2, modelNum3,modelNum4;
 
 	uintptr_t address = FindPatternJACCO("\x66\x81\xF9\x00\x00\x74\x10\x4D\x85\xC0", "xxx??xxxxx");
+	//address = 00007FF678678045
 	if (address)
 	{
 		address = address - 0x21;
 		UINT64 baseFuncAddr = address + *reinterpret_cast<int*>(address) + 0x4;
+		//baseFuncAddr = 0x7FF678678024 + 0x0092D624 + 0x4 = 0x7FF678FA564C
+		
 		int classOffset = *reinterpret_cast<int*>(address + 0x31);
 		modelHashEntries = *reinterpret_cast<UINT16*>(baseFuncAddr + *reinterpret_cast<int*>(baseFuncAddr + 3) + 7);
 		modelNum1 = *reinterpret_cast<int*>(*reinterpret_cast<int*>(baseFuncAddr + 0x52) + baseFuncAddr + 0x56); //cmp
@@ -502,6 +505,83 @@ void GenerateVehicleModelList()
 							{
 								hashes[*reinterpret_cast<PBYTE>(addr2 + classOffset) & 0x1F].push_back((unsigned int)cur->hash);
 							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void GenerateVehicleModelList()
+{
+	unsigned short modelHashEntries;
+	int modelNum1;
+	UINT64 modelHashTable, modelNum2, modelNum3, modelNum4;
+
+	// Search for function in Enhanced
+	uintptr_t address = FindPatternJACCO("\x44\x0F\xB7\x00\x00\x00\x00\x00\x45\x85\x00\x74\x00\x49\x89\x00\x4C\x8B\x1D\x00\x00\x00\x00\x45\x31\x00", "xxx?????xx?x?xx?xxx????xx?");
+	//address = 0x7FF70077E450
+	if (!address) {
+		// Try Legacy
+		GenerateVehicleModelListLegacy();
+		return;
+	}
+	UINT64 baseFuncAddr = address;
+	//baseFuncAddr = 0x7FF70077E450
+	write_text_to_log_file((std::ostringstream() << "baseFuncAddr 0x" << std::hex << std::uppercase << baseFuncAddr).str());
+
+	int classOffset = 0x548; //Can't locate it in GTA 5 Enhanced. Seems to be the same as Legacy
+	write_text_to_log_file((std::ostringstream() << "classOffset 0x" << std::hex << std::uppercase << classOffset).str());
+
+	modelHashEntries = *reinterpret_cast<UINT16*>(baseFuncAddr + *reinterpret_cast<int*>(baseFuncAddr + 4) + 8);
+	//modelHashEntries = 0x7FF70077E450 + 0x0350DF20 + 8 = 0x7FF703C8C378 = 0xFFF1 = 65521
+	write_text_to_log_file("modelHashEntries: " + (int)modelHashEntries);
+
+	modelNum1 = *reinterpret_cast<int*>(*reinterpret_cast<int*>(baseFuncAddr + 0x4F) + baseFuncAddr + 0x53); //cmp
+	//modelNum1 = 0x0350DE75 + 0x7FF70077E450 + 0x53 = 0x7FF703C8C318 = 0xFFF1
+	write_text_to_log_file((std::ostringstream() << "modelNum1 0x" << std::hex << std::uppercase << modelNum1).str());
+
+	modelNum2 = *reinterpret_cast<PUINT64>(*reinterpret_cast<int*>(baseFuncAddr + 0x58) + baseFuncAddr + 0x5C); //mov
+	//modelNum2 = 0x0350DE94 + 0x7FF70077E450 + 0x5C = 0x7FF703C8C340 = 0x0239094E8050
+	write_text_to_log_file((std::ostringstream() << "modelNum2 0x" << std::hex << std::uppercase << modelNum2).str());
+
+	modelNum3 = *reinterpret_cast<PUINT64>(*reinterpret_cast<int*>(baseFuncAddr + 0x7D) + baseFuncAddr + 0x81); //mul
+	//modelNum3 = 0x0350DE57 + 0x7FF70077E450 + 0x81 = 0x7FF703C8C328 = 0x8
+	write_text_to_log_file((std::ostringstream() << "modelNum3 0x" << std::hex << std::uppercase << modelNum3).str());
+
+	modelNum4 = *reinterpret_cast<PUINT64>(*reinterpret_cast<int*>(baseFuncAddr + 0x6E) + baseFuncAddr + 0x72); //mov
+	//modelNum4 = 0x0350DE4E + 0x7FF70077E450 + 0x72 = 0x7FF703C8C310 = 0x023A27EB0040
+	write_text_to_log_file((std::ostringstream() << "modelNum4 0x" << std::hex << std::uppercase << modelNum4).str());
+
+	modelHashTable = *reinterpret_cast<PUINT64>(*reinterpret_cast<int*>(baseFuncAddr + 0x13) + baseFuncAddr + 0x17);
+	//modelHashTable = 0x0350DF09 + 0x7FF70077E450 + 0x17 = 0x7FF703C8C370
+	write_text_to_log_file((std::ostringstream() << "modelHashTable 0x" << std::hex << std::uppercase << modelHashTable).str());
+
+	HashNode** HashMap = reinterpret_cast<HashNode**>(modelHashTable);
+
+	auto& hashes = vehicleModels;
+
+	for (auto& vec : hashes)
+		vec.clear();
+
+	//Begin going through the pool and getting the vehicles
+	for (int i = 0; i < modelHashEntries; i++)
+	{
+		for (HashNode* cur = HashMap[i]; cur; cur = cur->next)
+		{
+			UINT16 data = cur->data;
+			if ((int)data < modelNum1 && bittest(*reinterpret_cast<int*>(modelNum2 + (4 * data >> 5)), data & 0x1F))
+			{
+				UINT64 addr1 = modelNum4 + modelNum3 * data;
+				if (addr1)
+				{
+					UINT64 addr2 = *reinterpret_cast<PUINT64>(addr1);
+					if (addr2)
+					{
+						if ((*reinterpret_cast<PBYTE>(addr2 + 157) & 0x1F) == 5)
+						{
+							hashes[*reinterpret_cast<PBYTE>(addr2 + classOffset) & 0x1F].push_back((unsigned int)cur->hash);
 						}
 					}
 				}
@@ -588,9 +668,9 @@ void PopulateVehicleModelsArray()
 		std::sort(hlist->begin(), hlist->end(), [](const Hash& a, const Hash& b) -> bool { return (get_vehicle_make_and_model(a)) < get_vehicle_make_and_model(b); });
 	}
 
-	//std::stringstream ss;
-	//ss << "vHashLists size: " << vHashLists.size() << " g_vehHashes size: " << g_vehHashes.size() << " g_vehHashes_SUPER size: " << g_vehHashes_SUPER.size() << " g_vehHashes_SPORT size: " << g_vehHashes_SPORT.size() << " g_vehHashes_SPORTSCLASSIC size: " << g_vehHashes_SPORTSCLASSIC.size() << "g_vehHashes_COUPE size: " << g_vehHashes_COUPE.size() << " g_vehHashes_MUSCLE size: " << g_vehHashes_MUSCLE.size() << " g_vehHashes_OFFROAD size: " << g_vehHashes_OFFROAD.size() << " g_vehHashes_SUV size: " << g_vehHashes_SUV.size() << " g_vehHashes_SEDAN size: " << g_vehHashes_SEDAN.size() << " g_vehHashes_COMPACT size: " << g_vehHashes_COMPACT.size() << " g_vehHashes_PICKUP size: " << g_vehHashes_PICKUP.size() << " g_vehHashes_VAN size: " << g_vehHashes_VAN.size() << " g_vehHashes_TRUCK size: " << g_vehHashes_TRUCK.size() << " g_vehHashes_INDUSTRIAL size: " << g_vehHashes_INDUSTRIAL.size() << " g_vehHashes_MILITARY size: " << g_vehHashes_MILITARY.size() << " g_vehHashes_COMMERCIAL size: " << g_vehHashes_COMMERCIAL.size() << " g_vehHashes_UTIITY size: " << g_vehHashes_UTILITY.size() << " g_vehHashes_SERVICE size: " << g_vehHashes_SERVICE.size() << " g_vehHashes_TRAILER size: " << g_vehHashes_TRAILER.size() << " g_vehHashes_TRAIN size: " << g_vehHashes_TRAIN.size() << " g_vehHashes_EMERGENCY size: " << g_vehHashes_EMERGENCY.size() << " g_vehHashes_MOTORCYCLE size: " << g_vehHashes_MOTORCYCLE.size() << " g_vehHashes_BICYCLE size: " << g_vehHashes_BICYCLE.size() << " g_vehHashes_PLANE size: " << g_vehHashes_PLANE.size() << " g_vehHashes_HELICOPTER size: " << g_vehHashes_HELICOPTER.size() << " g_vehHashes_BOAT size: " << g_vehHashes_BOAT.size() << " g_vehHashes_OPENWHEEL size: " << g_vehHashes_OPENWHEEL.size() << " g_vehHashes_OTHER size: " << g_vehHashes_OTHER.size() << std::endl;
-	//write_text_to_log_file(ss.str());
+	std::stringstream ss;
+	ss << "vHashLists size: " << vHashLists.size() << " g_vehHashes size: " << g_vehHashes.size() << " g_vehHashes_SUPER size: " << g_vehHashes_SUPER.size() << " g_vehHashes_SPORT size: " << g_vehHashes_SPORT.size() << " g_vehHashes_SPORTSCLASSIC size: " << g_vehHashes_SPORTSCLASSIC.size() << "g_vehHashes_COUPE size: " << g_vehHashes_COUPE.size() << " g_vehHashes_MUSCLE size: " << g_vehHashes_MUSCLE.size() << " g_vehHashes_OFFROAD size: " << g_vehHashes_OFFROAD.size() << " g_vehHashes_SUV size: " << g_vehHashes_SUV.size() << " g_vehHashes_SEDAN size: " << g_vehHashes_SEDAN.size() << " g_vehHashes_COMPACT size: " << g_vehHashes_COMPACT.size() << " g_vehHashes_PICKUP size: " << g_vehHashes_PICKUP.size() << " g_vehHashes_VAN size: " << g_vehHashes_VAN.size() << " g_vehHashes_TRUCK size: " << g_vehHashes_TRUCK.size() << " g_vehHashes_INDUSTRIAL size: " << g_vehHashes_INDUSTRIAL.size() << " g_vehHashes_MILITARY size: " << g_vehHashes_MILITARY.size() << " g_vehHashes_COMMERCIAL size: " << g_vehHashes_COMMERCIAL.size() << " g_vehHashes_UTIITY size: " << g_vehHashes_UTILITY.size() << " g_vehHashes_SERVICE size: " << g_vehHashes_SERVICE.size() << " g_vehHashes_TRAILER size: " << g_vehHashes_TRAILER.size() << " g_vehHashes_TRAIN size: " << g_vehHashes_TRAIN.size() << " g_vehHashes_EMERGENCY size: " << g_vehHashes_EMERGENCY.size() << " g_vehHashes_MOTORCYCLE size: " << g_vehHashes_MOTORCYCLE.size() << " g_vehHashes_BICYCLE size: " << g_vehHashes_BICYCLE.size() << " g_vehHashes_PLANE size: " << g_vehHashes_PLANE.size() << " g_vehHashes_HELICOPTER size: " << g_vehHashes_HELICOPTER.size() << " g_vehHashes_BOAT size: " << g_vehHashes_BOAT.size() << " g_vehHashes_OPENWHEEL size: " << g_vehHashes_OPENWHEEL.size() << " g_vehHashes_OTHER size: " << g_vehHashes_OTHER.size() << std::endl;
+	write_text_to_log_file(ss.str());
 }
 
 char* GetVehicleModelName(int modelHash)
@@ -5028,7 +5108,7 @@ bool onconfirm_spawn_menu_cars(MenuItem<int> choice){
 	MenuParameters<int> params(menuItems, caption);
 	params.menuSelectionPtr = 0;
 	params.onConfirmation = onconfirm_vehlist_menu;
-	params.lineImageProvider = vehicle_image_preview_finder;
+	params.lineImageProvider = NULL;//vehicle_image_preview_finder; //TODO: enable crashes it
 
 	if (choice.value == tmp_menuindex) params.menuSelectionPtr = &curr_c_pos;
 	if (choice.value != tmp_menuindex) {
