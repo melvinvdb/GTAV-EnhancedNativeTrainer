@@ -14,6 +14,7 @@ https://github.com/gtav-ent/GTAV-EnhancedNativeTrainer
 #include "road_laws.h"
 #include "speed_altitude.h"
 #include "..\features\vehmodmenu.h"
+#include "..\features\function_resolver.h"
 #include "hotkeys.h"
 #include "script.h"
 #include "..\ui_support\menu_functions.h"
@@ -380,9 +381,6 @@ int doorOptionsMenuIndex, vehSeatIndexMenuIndex = 0;
 int savedVehicleListSortMethod = 0;
 bool vehSaveSortMenuInterrupt = false;
 
-typedef __int64(*GetModelInfo_t)(unsigned int modelHash, int* index);
-GetModelInfo_t GetModelInfo = (GetModelInfo_t)FindPatternJACCO("\x0F\xB7\x05\x00\x00\x00\x00\x45\x33\xC9\x4C\x8B\xDA\x66\x85\xC0\x0F\x84\x00\x00\x00\x00\x44\x0F\xB7\xC0\x33\xD2\x8B\xC1\x41\xF7\xF0\x48\x8B\x05\x00\x00\x00\x00\x4C\x8B\x14\xD0\xEB\x09\x41\x3B\x0A\x74\x54", "xxx????xxxxxxxxxxx????xxxxxxxxxxxxxx????xxxxxxxxxxx");
-
 std::vector<Hash> g_vehHashes;
 std::vector<Hash> g_vehHashes_SUPER;
 std::vector<Hash> g_vehHashes_SPORT;
@@ -519,7 +517,7 @@ void GenerateVehicleModelList()
 	int modelNum1;
 	UINT64 modelHashTable, modelNum2, modelNum3, modelNum4;
 
-	// Search for function in Enhanced
+	// Search for function in Enhanced. Same as FunctionID::GetModelInfo
 	uintptr_t address = FindPatternJACCO("\x44\x0F\xB7\x00\x00\x00\x00\x00\x45\x85\x00\x74\x00\x49\x89\x00\x4C\x8B\x1D\x00\x00\x00\x00\x45\x31\x00", "xxx?????xx?x?xx?xxx????xx?");
 	//address = 0x7FF70077E450
 	if (!address) {
@@ -676,20 +674,22 @@ void PopulateVehicleModelsArray()
 char* GetVehicleModelName(int modelHash)
 {
 	int index = 0xFFFF;
-	if (!GetModelInfo) {
+	auto pGetModelInfo = ResolveFunction<FunctionID::GetModelInfo>();
+	if (!pGetModelInfo) {
 		return nullptr;
 	}
-	uint64_t modelInfo = GetModelInfo(modelHash, &index);
+	uint64_t modelInfo = pGetModelInfo(modelHash, &index);
 	return (char*)(modelInfo + 0x298);
 }
 
 char* GetVehicleMakeName(int modelHash)
 {
 	int index = 0xFFFF;
-	if (!GetModelInfo) {
+	auto pGetModelInfo = ResolveFunction<FunctionID::GetModelInfo>();
+	if (!pGetModelInfo) {
 		return nullptr;
 	}
-	uint64_t modelInfo = GetModelInfo(modelHash, &index);
+	uint64_t modelInfo = pGetModelInfo(modelHash, &index);
 	return (char*)(modelInfo + 0x2A4);
 }
 

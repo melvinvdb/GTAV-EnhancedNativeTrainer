@@ -10,3 +10,6 @@ GenerateVehicleModelList:
 search text "apply data, new player model not valid"
 go to used function
 Move up to find the vehicle list call
+
+GetModelInfo:
+Is the same function as above
