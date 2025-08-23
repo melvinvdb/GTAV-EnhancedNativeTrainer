@@ -18,6 +18,7 @@ https://github.com/gtav-ent/GTAV-EnhancedNativeTrainer
 
 #include "debug\debuglog.h"
 #include "features/misc.h"
+#include "features/function_resolver.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase; // MSVC specific, with other compilers use HMODULE from DllMain
 
@@ -132,20 +133,11 @@ uintptr_t FindPattern(const char *pattern, const char *mask)
 	return FindPattern(pattern, mask, reinterpret_cast<const char *>(module.lpBaseOfDll), module.SizeOfImage);
 }
 
-bool CompareMemory(const uint8_t* pData, const uint8_t* bMask, const char* sMask)
-{
-	for (; *sMask; ++sMask, ++pData, ++bMask)
-		if (*sMask == 'x' && *pData != *bMask)
-			return false;
-
-	return *sMask == NULL;
-}
-
 int RegisterFile(const std::string& fullPath, const std::string& fileName)
 {
 	int textureID = -1;
 	std::string path = fullPath.c_str();
-	static uint32_t* (*pRegisterFile)(int*, const char*, bool, const char*, bool) = reinterpret_cast<decltype(pRegisterFile)>(FindPatternJACCO("\x48\x89\x5C\x24\x00\x48\x89\x6C\x24\x00\x48\x89\x7C\x24\x00\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x50\x48\x8B\xEA\x4C\x8B\xFA\x48\x8B\xD9\x4D\x85\xC9", "xxxx?xxxx?xxxx?xxxxxxxxxxxxxxxxxxxxxx"));
+	auto pRegisterFile = ResolveFunction<FunctionID::RegisterFile>();
 
 	if (!pRegisterFile) {
 		write_text_to_log_file("[ERROR] RegisterFile handle not found!");
