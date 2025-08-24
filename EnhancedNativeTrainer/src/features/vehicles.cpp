@@ -5108,7 +5108,7 @@ bool onconfirm_spawn_menu_cars(MenuItem<int> choice){
 	MenuParameters<int> params(menuItems, caption);
 	params.menuSelectionPtr = 0;
 	params.onConfirmation = onconfirm_vehlist_menu;
-	params.lineImageProvider = NULL;//vehicle_image_preview_finder; //TODO: enable crashes it
+	params.lineImageProvider = vehicle_image_preview_finder;
 
 	if (choice.value == tmp_menuindex) params.menuSelectionPtr = &curr_c_pos;
 	if (choice.value != tmp_menuindex) {

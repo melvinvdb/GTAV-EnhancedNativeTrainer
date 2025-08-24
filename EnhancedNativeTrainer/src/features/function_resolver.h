@@ -24,7 +24,7 @@ struct FunctionTraits;  // forward declaration
 
 template <>
 struct FunctionTraits<FunctionID::RegisterFile> {
-    using type = uint32_t * (*)(int*, const char*, bool, const char*, bool);
+    using type = uint32_t * (*)(int* textureID, const char* fullPath, bool load, const char* name, bool strictAssert);
 };
 
 template <>
